@@ -24,7 +24,7 @@
         </select>
         
         <label for="notaFinal">Nota Final:</label>
-        <input type="number" id="notaFinal" required>
+        <input type="number" id="notaFinal" required step="0.1">
         
         <button type="submit">Cadastrar</button>
     </form>
@@ -55,26 +55,43 @@
     
     <script>
         let alunos = [];
+        let alunoEditando = null;
 
         document.getElementById("formulario").addEventListener("submit", (event) => {
             event.preventDefault();
-            adicionarAluno();
+            if (alunoEditando !== null) {
+                atualizarAluno(alunoEditando);
+            } else {
+                adicionarAluno();
+            }
         });
 
         const adicionarAluno = () => {
             const nome = document.getElementById('nome').value;
-            const idade = document.getElementById('idade').value;
+            const idade = parseInt(document.getElementById('idade').value);
             const curso = document.getElementById('curso').value;
             const notaFinal = parseFloat(document.getElementById('notaFinal').value);
 
-            if (nome && idade && curso && !isNaN(notaFinal)) {
+            if (nome && !isNaN(idade) && curso && !isNaN(notaFinal)) {
                 const situacao = notaFinal >= 7 ? "Aprovado" : "Reprovado";
-                const aluno = { nome, idade, curso, notaFinal, situacao };
-                alunos.push(aluno);
+                alunos.push({ nome, idade, curso, notaFinal, situacao });
                 atualizarTabela();
                 limparFormulario();
                 alert("Aluno cadastrado com sucesso!");
             }
+        };
+
+        const atualizarAluno = (index) => {
+            alunos[index].nome = document.getElementById('nome').value;
+            alunos[index].idade = parseInt(document.getElementById('idade').value);
+            alunos[index].curso = document.getElementById('curso').value;
+            alunos[index].notaFinal = parseFloat(document.getElementById('notaFinal').value);
+            alunos[index].situacao = alunos[index].notaFinal >= 7 ? "Aprovado" : "Reprovado";
+
+            alunoEditando = null;
+            atualizarTabela();
+            limparFormulario();
+            alert("Aluno atualizado com sucesso!");
         };
 
         const atualizarTabela = () => {
@@ -86,24 +103,16 @@
                     <td>${aluno.nome}</td>
                     <td>${aluno.idade}</td>
                     <td>${aluno.curso}</td>
-                    <td>${aluno.notaFinal}</td>
+                    <td>${aluno.notaFinal.toFixed(1)}</td>
                     <td>${aluno.situacao}</td>
                     <td>
-                        <button class="editar" data-index="${index}">Editar</button>
-                        <button class="excluir" data-index="${index}">Excluir</button>
+                        <button class="editar" onclick="editarAluno(${index})">Editar</button>
+                        <button class="excluir" onclick="excluirAluno(${index})">Excluir</button>
                     </td>
                 </tr>`;
                 tbody.innerHTML += row;
             });
         };
-
-        document.getElementById("tabela-body").addEventListener("click", (event) => {
-            if (event.target.classList.contains("editar")) {
-                editarAluno(event.target.dataset.index);
-            } else if (event.target.classList.contains("excluir")) {
-                excluirAluno(event.target.dataset.index);
-            }
-        });
 
         const excluirAluno = (index) => {
             alunos.splice(index, 1);
@@ -112,40 +121,47 @@
         };
 
         const editarAluno = (index) => {
-            const aluno = alunos[index];
-            document.getElementById('nome').value = aluno.nome;
-            document.getElementById('idade').value = aluno.idade;
-            document.getElementById('curso').value = aluno.curso;
-            document.getElementById('notaFinal').value = aluno.notaFinal;
-            excluirAluno(index);
-            alert("Aluno em edição, preencha os dados novamente e cadastre.");
+            alunoEditando = index;
+            document.getElementById('nome').value = alunos[index].nome;
+            document.getElementById('idade').value = alunos[index].idade;
+            document.getElementById('curso').value = alunos[index].curso;
+            document.getElementById('notaFinal').value = alunos[index].notaFinal;
         };
 
         const listarAprovados = () => {
+            limparRelatorio();
             const aprovados = alunos.filter(aluno => aluno.notaFinal >= 7).map(aluno => aluno.nome);
-            atualizarRelatorio("Aprovados: " + aprovados.join(", "));
+            atualizarRelatorio("Aprovados: " + (aprovados.length ? aprovados.join(", ") : "Nenhum aluno aprovado."));
         };
 
         const calcularMediaNotas = () => {
-            const media = alunos.reduce((acc, aluno) => acc + aluno.notaFinal, 0) / alunos.length || 0;
+            limparRelatorio();
+            if (alunos.length === 0) return atualizarRelatorio("Nenhum aluno cadastrado.");
+            const media = alunos.reduce((acc, aluno) => acc + aluno.notaFinal, 0) / alunos.length;
             atualizarRelatorio("Média das Notas: " + media.toFixed(2));
         };
 
         const calcularMediaIdades = () => {
-            const media = alunos.reduce((acc, aluno) => acc + parseInt(aluno.idade), 0) / alunos.length || 0;
+            limparRelatorio();
+            if (alunos.length === 0) return atualizarRelatorio("Nenhum aluno cadastrado.");
+            const media = alunos.reduce((acc, aluno) => acc + aluno.idade, 0) / alunos.length;
             atualizarRelatorio("Média das Idades: " + media.toFixed(2));
         };
 
         const listarNomesOrdenados = () => {
+            limparRelatorio();
+            if (alunos.length === 0) return atualizarRelatorio("Nenhum aluno cadastrado.");
             const nomesOrdenados = alunos.map(aluno => aluno.nome).sort();
             atualizarRelatorio("Nomes em Ordem Alfabética: " + nomesOrdenados.join(", "));
         };
 
         const quantidadeAlunosPorCurso = () => {
-            const contagem = {};
-            alunos.forEach(aluno => {
-                contagem[aluno.curso] = (contagem[aluno.curso] || 0) + 1;
-            });
+            limparRelatorio();
+            if (alunos.length === 0) return atualizarRelatorio("Nenhum aluno cadastrado.");
+            const contagem = alunos.reduce((acc, aluno) => {
+                acc[aluno.curso] = (acc[aluno.curso] || 0) + 1;
+                return acc;
+            }, {});
             const resultado = Object.entries(contagem).map(([curso, qtd]) => `${curso}: ${qtd}`).join(", ");
             atualizarRelatorio("Quantidade por Curso: " + resultado);
         };
@@ -156,6 +172,11 @@
             item.textContent = texto;
             relatorio.appendChild(item);
         };
+
+        const limparRelatorio = () => {
+            document.getElementById("relatorio").innerHTML = "";
+        };
+
     </script>
 </body>
 </html>
