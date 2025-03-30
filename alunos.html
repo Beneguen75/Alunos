@@ -44,11 +44,14 @@
         <tbody id="tabela-body"></tbody>
     </table>
     
-    <h2>Estatísticas</h2>
-    <p>Total de alunos cadastrados: <span id="total-alunos">0</span></p>
-    <p>Média de notas: <span id="media-notas">0</span></p>
-    <p>Quantidade de aprovados: <span id="qtd-aprovados">0</span></p>
-    <p>Quantidade de reprovados: <span id="qtd-reprovados">0</span></p>
+    <h2>Relatórios</h2>
+    <button onclick="listarAprovados()">Listar Aprovados</button>
+    <button onclick="calcularMediaNotas()">Média das Notas</button>
+    <button onclick="calcularMediaIdades()">Média das Idades</button>
+    <button onclick="listarNomesOrdenados()">Nomes em Ordem Alfabética</button>
+    <button onclick="quantidadeAlunosPorCurso()">Quantidade por Curso</button>
+    
+    <ul id="relatorio"></ul>
     
     <script>
         let alunos = [];
@@ -65,11 +68,10 @@
             const notaFinal = parseFloat(document.getElementById('notaFinal').value);
 
             if (nome && idade && curso && !isNaN(notaFinal)) {
-                const situacao = notaFinal >= 6 ? "Aprovado" : "Reprovado";
+                const situacao = notaFinal >= 7 ? "Aprovado" : "Reprovado";
                 const aluno = { nome, idade, curso, notaFinal, situacao };
                 alunos.push(aluno);
                 atualizarTabela();
-                atualizarEstatisticas();
                 limparFormulario();
                 alert("Aluno cadastrado com sucesso!");
             }
@@ -106,7 +108,6 @@
         const excluirAluno = (index) => {
             alunos.splice(index, 1);
             atualizarTabela();
-            atualizarEstatisticas();
             alert("Aluno excluído com sucesso!");
         };
 
@@ -120,23 +121,40 @@
             alert("Aluno em edição, preencha os dados novamente e cadastre.");
         };
 
-        const limparFormulario = () => {
-            document.getElementById('nome').value = '';
-            document.getElementById('idade').value = '';
-            document.getElementById('curso').value = '';
-            document.getElementById('notaFinal').value = '';
+        const listarAprovados = () => {
+            const aprovados = alunos.filter(aluno => aluno.notaFinal >= 7).map(aluno => aluno.nome);
+            atualizarRelatorio("Aprovados: " + aprovados.join(", "));
         };
 
-        const atualizarEstatisticas = () => {
-            const totalAlunos = alunos.length;
-            const mediaNotas = alunos.length > 0 ? (alunos.reduce((acc, aluno) => acc + aluno.notaFinal, 0) / alunos.length).toFixed(2) : 0;
-            const qtdAprovados = alunos.filter(aluno => aluno.situacao === "Aprovado").length;
-            const qtdReprovados = alunos.filter(aluno => aluno.situacao === "Reprovado").length;
+        const calcularMediaNotas = () => {
+            const media = alunos.reduce((acc, aluno) => acc + aluno.notaFinal, 0) / alunos.length || 0;
+            atualizarRelatorio("Média das Notas: " + media.toFixed(2));
+        };
 
-            document.getElementById('total-alunos').textContent = totalAlunos;
-            document.getElementById('media-notas').textContent = mediaNotas;
-            document.getElementById('qtd-aprovados').textContent = qtdAprovados;
-            document.getElementById('qtd-reprovados').textContent = qtdReprovados;
+        const calcularMediaIdades = () => {
+            const media = alunos.reduce((acc, aluno) => acc + parseInt(aluno.idade), 0) / alunos.length || 0;
+            atualizarRelatorio("Média das Idades: " + media.toFixed(2));
+        };
+
+        const listarNomesOrdenados = () => {
+            const nomesOrdenados = alunos.map(aluno => aluno.nome).sort();
+            atualizarRelatorio("Nomes em Ordem Alfabética: " + nomesOrdenados.join(", "));
+        };
+
+        const quantidadeAlunosPorCurso = () => {
+            const contagem = {};
+            alunos.forEach(aluno => {
+                contagem[aluno.curso] = (contagem[aluno.curso] || 0) + 1;
+            });
+            const resultado = Object.entries(contagem).map(([curso, qtd]) => `${curso}: ${qtd}`).join(", ");
+            atualizarRelatorio("Quantidade por Curso: " + resultado);
+        };
+
+        const atualizarRelatorio = (texto) => {
+            const relatorio = document.getElementById("relatorio");
+            let item = document.createElement("li");
+            item.textContent = texto;
+            relatorio.appendChild(item);
         };
     </script>
 </body>
