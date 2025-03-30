@@ -6,6 +6,8 @@
     <title>Gerenciamento de Alunos</title>
 </head>
 <body>
+    <h1>Gerenciamento de Alunos</h1>
+    
     <h2>Cadastro de Alunos</h2>
     <form onsubmit="event.preventDefault(); adicionarAluno();">
         <label for="nome">Nome:</label>
@@ -35,6 +37,7 @@
                 <th>Idade</th>
                 <th>Curso</th>
                 <th>Nota Final</th>
+                <th>Situação</th>
                 <th>Ações</th>
             </tr>
         </thead>
@@ -42,12 +45,9 @@
     </table>
     
     <script>
-        // Estrutura básica do CRUD para alunos
-
-        // Array para armazenar os alunos
+        // Questão 1 - CRUD Básico
         let alunos = [];
 
-        // Função para adicionar aluno
         function adicionarAluno() {
             const nome = document.getElementById('nome').value;
             const idade = document.getElementById('idade').value;
@@ -55,14 +55,14 @@
             const notaFinal = document.getElementById('notaFinal').value;
 
             if (nome && idade && curso && notaFinal) {
-                const aluno = { nome, idade, curso, notaFinal };
+                const situacao = notaFinal >= 6 ? "Aprovado" : "Reprovado"; // Questão 2 - Adição de Situação
+                const aluno = { nome, idade, curso, notaFinal, situacao };
                 alunos.push(aluno);
                 atualizarTabela();
                 limparFormulario();
             }
         }
 
-        // Função para atualizar a tabela
         function atualizarTabela() {
             const tbody = document.getElementById('tabela-body');
             tbody.innerHTML = '';
@@ -73,6 +73,7 @@
                     <td>${aluno.idade}</td>
                     <td>${aluno.curso}</td>
                     <td>${aluno.notaFinal}</td>
+                    <td>${aluno.situacao}</td>
                     <td>
                         <button onclick="editarAluno(${index})">Editar</button>
                         <button onclick="excluirAluno(${index})">Excluir</button>
@@ -82,13 +83,11 @@
             });
         }
 
-        // Função para excluir um aluno
         function excluirAluno(index) {
             alunos.splice(index, 1);
             atualizarTabela();
         }
 
-        // Função para editar um aluno
         function editarAluno(index) {
             const aluno = alunos[index];
             document.getElementById('nome').value = aluno.nome;
@@ -98,7 +97,6 @@
             excluirAluno(index);
         }
 
-        // Função para limpar o formulário
         function limparFormulario() {
             document.getElementById('nome').value = '';
             document.getElementById('idade').value = '';
