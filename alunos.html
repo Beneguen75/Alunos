@@ -1,21 +1,28 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <!-- Define o conjunto de caracteres e a responsividade da página -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Título da página -->
     <title>Gerenciamento de Alunos</title>
 </head>
 <body>
+    <!-- Cabeçalho principal da página -->
     <h1>Gerenciamento de Alunos</h1>
     
+    <!-- Seção de cadastro de alunos -->
     <h2>Cadastro de Alunos</h2>
     <form id="formulario">
+        <!-- Campo para inserir o nome do aluno -->
         <label for="nome">Nome:</label>
         <input type="text" id="nome" required>
         
+        <!-- Campo para inserir a idade do aluno -->
         <label for="idade">Idade:</label>
         <input type="number" id="idade" required>
         
+        <!-- Campo para selecionar o curso do aluno -->
         <label for="curso">Curso:</label>
         <select id="curso" required>
             <option value="JavaScript">JavaScript</option>
@@ -23,16 +30,20 @@
             <option value="Java">Java</option>
         </select>
         
+        <!-- Campo para inserir a nota final do aluno -->
         <label for="notaFinal">Nota Final:</label>
         <input type="number" id="notaFinal" required step="0.1">
         
+        <!-- Botão para cadastrar o aluno -->
         <button type="submit">Cadastrar</button>
     </form>
     
+    <!-- Seção para exibir a lista de alunos cadastrados -->
     <h2>Lista de Alunos</h2>
     <table border="1">
         <thead>
             <tr>
+                <!-- Cabeçalhos da tabela -->
                 <th>Nome</th>
                 <th>Idade</th>
                 <th>Curso</th>
@@ -41,142 +52,23 @@
                 <th>Ações</th>
             </tr>
         </thead>
+        <!-- Corpo da tabela onde os dados dos alunos serão inseridos dinamicamente -->
         <tbody id="tabela-body"></tbody>
     </table>
     
+    <!-- Seção de relatórios -->
     <h2>Relatórios</h2>
+    <!-- Botões para gerar diferentes relatórios -->
     <button onclick="listarAprovados()">Listar Aprovados</button>
     <button onclick="calcularMediaNotas()">Média das Notas</button>
     <button onclick="calcularMediaIdades()">Média das Idades</button>
     <button onclick="listarNomesOrdenados()">Nomes em Ordem Alfabética</button>
     <button onclick="quantidadeAlunosPorCurso()">Quantidade por Curso</button>
     
+    <!-- Lista onde os relatórios serão exibidos -->
     <ul id="relatorio"></ul>
     
-    <script>
-        let alunos = [];
-        let alunoEditando = null;
-
-        document.getElementById("formulario").addEventListener("submit", (event) => {
-            event.preventDefault();
-            if (alunoEditando !== null) {
-                atualizarAluno(alunoEditando);
-            } else {
-                adicionarAluno();
-            }
-        });
-
-        const adicionarAluno = () => {
-            const nome = document.getElementById('nome').value;
-            const idade = parseInt(document.getElementById('idade').value);
-            const curso = document.getElementById('curso').value;
-            const notaFinal = parseFloat(document.getElementById('notaFinal').value);
-
-            if (nome && !isNaN(idade) && curso && !isNaN(notaFinal)) {
-                const situacao = notaFinal >= 7 ? "Aprovado" : "Reprovado";
-                alunos.push({ nome, idade, curso, notaFinal, situacao });
-                atualizarTabela();
-                limparFormulario();
-                alert("Aluno cadastrado com sucesso!");
-            }
-        };
-
-        const atualizarAluno = (index) => {
-            alunos[index].nome = document.getElementById('nome').value;
-            alunos[index].idade = parseInt(document.getElementById('idade').value);
-            alunos[index].curso = document.getElementById('curso').value;
-            alunos[index].notaFinal = parseFloat(document.getElementById('notaFinal').value);
-            alunos[index].situacao = alunos[index].notaFinal >= 7 ? "Aprovado" : "Reprovado";
-
-            alunoEditando = null;
-            atualizarTabela();
-            limparFormulario();
-            alert("Aluno atualizado com sucesso!");
-        };
-
-        const atualizarTabela = () => {
-            const tbody = document.getElementById('tabela-body');
-            tbody.innerHTML = '';
-
-            alunos.forEach((aluno, index) => {
-                let row = `<tr>
-                    <td>${aluno.nome}</td>
-                    <td>${aluno.idade}</td>
-                    <td>${aluno.curso}</td>
-                    <td>${aluno.notaFinal.toFixed(1)}</td>
-                    <td>${aluno.situacao}</td>
-                    <td>
-                        <button class="editar" onclick="editarAluno(${index})">Editar</button>
-                        <button class="excluir" onclick="excluirAluno(${index})">Excluir</button>
-                    </td>
-                </tr>`;
-                tbody.innerHTML += row;
-            });
-        };
-
-        const excluirAluno = (index) => {
-            alunos.splice(index, 1);
-            atualizarTabela();
-            alert("Aluno excluído com sucesso!");
-        };
-
-        const editarAluno = (index) => {
-            alunoEditando = index;
-            document.getElementById('nome').value = alunos[index].nome;
-            document.getElementById('idade').value = alunos[index].idade;
-            document.getElementById('curso').value = alunos[index].curso;
-            document.getElementById('notaFinal').value = alunos[index].notaFinal;
-        };
-
-        const listarAprovados = () => {
-            limparRelatorio();
-            const aprovados = alunos.filter(aluno => aluno.notaFinal >= 7).map(aluno => aluno.nome);
-            atualizarRelatorio("Aprovados: " + (aprovados.length ? aprovados.join(", ") : "Nenhum aluno aprovado."));
-        };
-
-        const calcularMediaNotas = () => {
-            limparRelatorio();
-            if (alunos.length === 0) return atualizarRelatorio("Nenhum aluno cadastrado.");
-            const media = alunos.reduce((acc, aluno) => acc + aluno.notaFinal, 0) / alunos.length;
-            atualizarRelatorio("Média das Notas: " + media.toFixed(2));
-        };
-
-        const calcularMediaIdades = () => {
-            limparRelatorio();
-            if (alunos.length === 0) return atualizarRelatorio("Nenhum aluno cadastrado.");
-            const media = alunos.reduce((acc, aluno) => acc + aluno.idade, 0) / alunos.length;
-            atualizarRelatorio("Média das Idades: " + media.toFixed(2));
-        };
-
-        const listarNomesOrdenados = () => {
-            limparRelatorio();
-            if (alunos.length === 0) return atualizarRelatorio("Nenhum aluno cadastrado.");
-            const nomesOrdenados = alunos.map(aluno => aluno.nome).sort();
-            atualizarRelatorio("Nomes em Ordem Alfabética: " + nomesOrdenados.join(", "));
-        };
-
-        const quantidadeAlunosPorCurso = () => {
-            limparRelatorio();
-            if (alunos.length === 0) return atualizarRelatorio("Nenhum aluno cadastrado.");
-            const contagem = alunos.reduce((acc, aluno) => {
-                acc[aluno.curso] = (acc[aluno.curso] || 0) + 1;
-                return acc;
-            }, {});
-            const resultado = Object.entries(contagem).map(([curso, qtd]) => `${curso}: ${qtd}`).join(", ");
-            atualizarRelatorio("Quantidade por Curso: " + resultado);
-        };
-
-        const atualizarRelatorio = (texto) => {
-            const relatorio = document.getElementById("relatorio");
-            let item = document.createElement("li");
-            item.textContent = texto;
-            relatorio.appendChild(item);
-        };
-
-        const limparRelatorio = () => {
-            document.getElementById("relatorio").innerHTML = "";
-        };
-
-    </script>
+    <!-- Inclusão do arquivo JavaScript para manipulação da página -->
+    <script src="script.js"></script>
 </body>
 </html>
