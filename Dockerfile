@@ -1,17 +1,15 @@
-# Usando uma imagem do Node.js
-FROM node:18
+# Usa a imagem oficial do Nginx
+FROM nginx:latest
 
-# Criando um diretório de trabalho
-WORKDIR /app
+# Remove o HTML padrão do Nginx
+RUN rm -rf /usr/share/nginx/html/*
 
-# Copiando os arquivos do projeto para dentro do container
-COPY . .
+# Copia seus arquivos HTML e JS para a pasta padrão do Nginx
+COPY alunos.html /usr/share/nginx/html/
+COPY script.js /usr/share/nginx/html/
 
-# Instalando um servidor HTTP simples
-RUN npm install -g serve
+# Expõe a porta padrão do Nginx
+EXPOSE 80
 
-# Expondo a porta 3000
-EXPOSE 3000
-
-# Comando para rodar o servidor
-CMD ["serve", "-s", "."]
+# Inicia o servidor Nginx
+CMD ["nginx", "-g", "daemon off;"]
