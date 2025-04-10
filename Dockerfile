@@ -1,15 +1,14 @@
 # Usa a imagem oficial do Nginx
-FROM nginx:latest
+FROM nginx:alpine
 
-# Remove o HTML padrão do Nginx
+# Remove o conteúdo padrão do nginx
 RUN rm -rf /usr/share/nginx/html/*
 
-# Copia seus arquivos HTML e JS para a pasta padrão do Nginx
-COPY alunos.html /usr/share/nginx/html/
-COPY script.js /usr/share/nginx/html/
+# Copia todos os arquivos do projeto para o diretório padrão do Nginx
+COPY . /usr/share/nginx/html
 
-# Expõe a porta padrão do Nginx
+# Expõe a porta 80
 EXPOSE 80
 
-# Inicia o servidor Nginx
+# Inicia o Nginx
 CMD ["nginx", "-g", "daemon off;"]
